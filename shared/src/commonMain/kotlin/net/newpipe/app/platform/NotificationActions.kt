@@ -8,7 +8,7 @@ package net.newpipe.app.platform
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
-import net.newpipe.app.model.ChannelNotificationCount
+import net.newpipe.app.model.ChannelNotification
 
 /**
  * Platform-specific actions triggered from the Notifications settings screen
@@ -16,6 +16,8 @@ import net.newpipe.app.model.ChannelNotificationCount
 interface NotificationActions {
 
     val isPlayerNotificationExempt: Boolean
+
+    val hasSystemMediaControls: Boolean
 
     fun areNotificationsEnabledOnDevice(): Boolean
 
@@ -25,12 +27,18 @@ interface NotificationActions {
 
     fun applyNewStreamsCheckSchedule()
 
-    fun channelNotificationCounts(): Flow<ChannelNotificationCount>
+    fun recreatePlayerNotification()
+
+    fun channelNotifications(): Flow<List<ChannelNotification>>
+
+    suspend fun setChannelNotificationsEnabled(channel: ChannelNotification, enabled: Boolean)
 }
 
 internal object NoOpNotificationActions : NotificationActions {
 
     override val isPlayerNotificationExempt = false
+
+    override val hasSystemMediaControls = false
 
     override fun areNotificationsEnabledOnDevice() = true
 
@@ -40,7 +48,11 @@ internal object NoOpNotificationActions : NotificationActions {
 
     override fun applyNewStreamsCheckSchedule() = logUnsupported("applyNewStreamsCheckSchedule")
 
-    override fun channelNotificationCounts(): Flow<ChannelNotificationCount> = emptyFlow()
+    override fun channelNotifications(): Flow<List<ChannelNotification>> = emptyFlow()
+
+    override suspend fun setChannelNotificationsEnabled(channel: ChannelNotification, enabled: Boolean) = logUnsupported("setChannelNotificationsEnabled")
+
+    override fun recreatePlayerNotification() = logUnsupported("recreatePlayerNotification")
 
     private fun logUnsupported(action: String) = Logger.w(messageString = "Notification action '$action' is unsupported on this platform")
 }
